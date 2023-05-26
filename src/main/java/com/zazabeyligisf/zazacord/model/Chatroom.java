@@ -8,6 +8,7 @@ import org.hibernate.type.SqlTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -26,11 +27,11 @@ public class Chatroom {
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JdbcTypeCode(SqlTypes.UUID)
-    private Long id;
+    private UUID id;
 
     @ElementCollection
-    private LinkedList<UUID> userIDs;
+    private List<UUID> userIDs;
 
     @ElementCollection
-    private LinkedList<UUID> messageIDs;
+    private List<UUID> messageIDs;
 }

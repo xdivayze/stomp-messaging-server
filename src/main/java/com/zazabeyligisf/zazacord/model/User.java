@@ -1,19 +1,18 @@
 package com.zazabeyligisf.zazacord.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Getter
 @Builder
+@Setter
 @NoArgsConstructor
 @Table(name = "user")
 @AllArgsConstructor
@@ -24,7 +23,7 @@ public class User {
     private UUID id;
     private String username;
     @ElementCollection
-    private LinkedList<String> friends;
+    private List<UUID> friends;
     private String password;
 
 }

@@ -20,8 +20,8 @@ public class Message {
     @Column(name = "id", nullable = false)
     @GeneratedValue(generator = "UUID", strategy = GenerationType.AUTO)
     private UUID messageID;
-    private String senderName;
-    private String receiverName;
+    private UUID senderName;
+    private UUID receiverName;
     private String message;
     private LocalDateTime dateTime;
     private UUID chatroomID;
