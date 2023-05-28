@@ -58,6 +58,11 @@ public class ChatController {
         return response;
     }
 
+    @GetMapping("/get-user-by-id")
+    public String getUserById(@Param("id") String id) {
+        return gson.toJson(userRepository.findById(UUID.fromString(id)).orElseThrow());
+    }
+
     @PostMapping("/create-chatroom")
     public void createChatroom(@RequestBody String payload) {
         chatService.createChatroom(payload);
@@ -68,9 +73,10 @@ public class ChatController {
         chatService.createUser(user);
     }
 
-    @PostMapping("/add-friend")
-    public void addFriend(@RequestBody String id, @Payload UUID friendID) {
+    @GetMapping("/add-friend")
+    public void addFriend(@Param("id") String id, @Param("friendid") String friendid) {
         User user = userRepository.findById(UUID.fromString(id)).orElseThrow();
+        UUID friendID = UUID.fromString(friendid);
         //check if uuid is existing in friends
         user.getFriends().stream().map(UUID::toString).filter(friendID.toString()::equals).findAny().or(() -> {
             user.getFriends().add(friendID);

@@ -1,5 +1,6 @@
 package com.zazabeyligisf.zazacord.repositories;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.zazabeyligisf.zazacord.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,11 +26,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             save(user);
             return Optional.of(user);
         }).orElseThrow();
-        foundUser.setFriends(new LinkedList<>());
-        foundUser.setPassword(payload.get("password").getAsString());
-        foundUser.setUsername(payload.get("username").getAsString());
 
-        save(foundUser);
+
+        save(new Gson().fromJson(payload, User.class));
 
     }
 }

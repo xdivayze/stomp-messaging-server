@@ -8,12 +8,9 @@
 
 </head>
 <style>
-    .house {
-        background-color: red;
-    }
-
-    .from {
-        background-color: green;
+    .table-max-size-200{
+        max-height: 200px;
+        overflow-y: auto;
     }
 </style>
 <body>
@@ -34,9 +31,20 @@
         </div>
     </form>
 </div>
-<div id="query">
-    <div class=" p-2 input-group mb-3" id="query-input-group"></div>
-    <div style="width: 100%;" class="btn btn-primary" id="yeter">YETER</div>
+<div class="container" id="query">
+    <div class="row">
+        <div id="table-goes-here" class="col">
+            <div class="ml-0 p-2 input-group" id="query-input-group"></div>
+            <div style="width: 100%; padding:0px; margin-top: 7px;" class="btn btn-primary" id="yeter">YETER</div>
+            <div class="table-max-size-200" id="actually-here">
+
+            </div>
+        </div>
+       <div class="col">
+           <button style="width: 100%;margin-top: 7px; padding: 0px;" class="btn btn-primary" id="show-friends" type="button">ARKADAŞLARIN YOK</button>
+       </div>
+    </div>
+
 
 
 </div>

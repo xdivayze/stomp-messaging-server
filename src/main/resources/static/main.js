@@ -11,6 +11,7 @@ var userUUID = null;
 //TODO TRANSFER LOGIN TO ANOTHER PAGE
 
 $("#yeter").hide();
+$("#show-friends").hide();
 
 function validate() {
     let name = $("#username").val();
@@ -34,7 +35,8 @@ function validate() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(json),
-    }).then(userUUID = response => response.text()).then(userUUID => {
+    }).then(response => response.text()).then(response => {
+        userUUID = response;
         console.log(userUUID);
     }).then(() => {
         $("#login").hide();
@@ -45,6 +47,15 @@ function validate() {
             "    <input id='query-username' type='text' class='form-control' placeholder='Username' aria-label='Username' aria-describedby='arobase'>\n" +
             "    <button type='button' class='btn btn-outline btn-primary' id='query-button'>ADAM ARA </button>"
         $("#query-input-group").append(block);
+        let show_friends = $("#show-friends");
+        show_friends.show();
+        show_friends.click(function () {
+            getFriends(userUUID).then(response => {
+                console.log(response.friends);
+            });
+        });
+    }).then(() => {
+
     });
 }
 
@@ -72,7 +83,7 @@ $("#query").on("click", "#query-button", function () {
             "        </tbody>\n" +
             "        </thead>\n" +
             "    </table>"
-        $("#query").append(static_block);
+        $("#actually-here").append(static_block);
         $("#query-input-group").hide();
         let yeter = $("#yeter");
 
@@ -83,11 +94,34 @@ $("#query").on("click", "#query-button", function () {
         });
         yeter.show();
         response.forEach(user => {
-            $("#query-table-body").append("<tr><th scope='row'>" + count + "</th><td>" + user.username + "</td><td>" + `${user.id}` + "</td></tr>");
+            $("#query-table-body").append("<tr class='user-query-result-ror' ><th scope='row'>" + count + "</th><td>" + user.username + "</td><td>" + `${user.id}` + "</td></tr>");
+            $(".user-query-result-ror").click(function () {
+                addFriend(userUUID, user.id).then(() => {
+                    console.log("added friend");
+                });
+            });
             count++;
         });
     });
 });
+
+async function getFriends(id) {
+    let url = "/api/get-user-by-id?" + new URLSearchParams({
+        id: id
+    });
+    console.log(url);
+    let response = await fetch(url);
+    return await response.json();
+}
+
+async function addFriend(uuid, uuid1) {
+    let url = "/api/add-friend?" + new URLSearchParams({
+        id: uuid,
+        friendid: uuid1
+    });
+    console.log(url);
+    return await fetch(url);
+}
 
 function connect() {
     var socket = new SockJS("/ws");
