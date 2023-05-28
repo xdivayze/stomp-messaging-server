@@ -95,12 +95,13 @@ $("#query").on("click", "#query-button", function () {
         yeter.show();
         response.forEach(user => {
             $("#query-table-body").append("<tr class='user-query-result-ror' ><th scope='row'>" + count + "</th><td>" + user.username + "</td><td>" + `${user.id}` + "</td></tr>");
-            $(".user-query-result-ror").click(function () {
-                addFriend(userUUID, user.id).then(() => {
-                    console.log("added friend");
-                });
-            });
             count++;
+        });
+        $(".user-query-result-ror").click(function () {
+            let userId = $(this).find("td").last().text();
+            addFriend(userUUID, userId).then(() => {
+                console.log("added friend");
+            });
         });
     });
 });
