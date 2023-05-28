@@ -73,16 +73,16 @@ $("#query").on("click", "#query-button", function () {
             "        </thead>\n" +
             "    </table>"
         $("#query").append(static_block);
-        response.forEach(user => {
-            $("#query-input-group").hide();
-            let yeter = $("#yeter");
+        $("#query-input-group").hide();
+        let yeter = $("#yeter");
 
-            yeter.click(function () {
-                yeter.hide();
-                $("#query-input-group").show();
-                $("#query-table").remove();
-            });
-            yeter.show();
+        yeter.click(function () {
+            yeter.hide();
+            $("#query-input-group").show();
+            $("#query-table").remove();
+        });
+        yeter.show();
+        response.forEach(user => {
             $("#query-table-body").append("<tr><th scope='row'>" + count + "</th><td>" + user.username + "</td><td>" + `${user.id}` + "</td></tr>");
             count++;
         });
