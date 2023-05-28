@@ -7,6 +7,7 @@ import com.zazabeyligisf.zazacord.model.User;
 import com.zazabeyligisf.zazacord.repositories.UserRepository;
 import com.zazabeyligisf.zazacord.services.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -48,6 +49,13 @@ public class ChatController {
             return user.getId().toString();
         }
         return "Passwords don't match";
+    }
+
+    @GetMapping("/get-users")
+    public String getUsers(@Param("username") String username) {
+        String response = gson.toJson(userRepository.findByNameStartingWithIgnoreCase(username));
+        System.out.printf("Response: %s%n", response);
+        return response;
     }
 
     @PostMapping("/create-chatroom")
