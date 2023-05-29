@@ -25,7 +25,6 @@ public class Chatroom {
     }
     @Id
     @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @JdbcTypeCode(SqlTypes.UUID)
     private UUID id;
     @ElementCollection
@@ -36,6 +35,6 @@ public class Chatroom {
     @Column(name = "link")
     private URL link;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<UUID> messageIDs;
 }

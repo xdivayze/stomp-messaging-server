@@ -34,36 +34,20 @@ public class ChatService {
         this.userRepository = userRepository;
     }
 
-    public Message receivePrivateMessage(String message) {
-        JsonObject payload = gson.fromJson(message, JsonObject.class);
-        Message message1 = Message.builder()
-                .chatroomID(UUID.fromString(payload.get("chatroomID").getAsString()))
-                .messageID(UUID.randomUUID())
-                .senderName(UUID.fromString(payload.get("senderID").getAsString()))
-                .receiverName(UUID.fromString(payload.get("receiverID").getAsString()))
-                .message(payload.get("content").getAsString())
-                .dateTime(LocalDateTime.now())
-                .build();
-
-        messageRepo.save(message1);
-        Chatroom foundChatRoom = chatroomRepo.findById(message1.getChatroomID()).orElseThrow();
-        foundChatRoom.getMessageIDs().add(message1.getMessageID());
-        return message1;
-    }
-
     public String createChatroom(String payload) throws MalformedURLException {
         JsonObject jsonObject = gson.fromJson(payload, JsonObject.class);
         String you = jsonObject.get("you").getAsString();
         UUID id = UUID.randomUUID();
         URL url = new URL("http://xahin.xyz/chatrooms/" + id.toString());
         User youUser = userRepository.findUserByUsername(you).orElseThrow();
-        chatroomRepo.save(Chatroom.builder()
-                .id(id)
+        Chatroom chatroom =Chatroom.builder()
                 .messageIDs(new LinkedList<UUID>())
                 .userIDs(new LinkedList<String>())
                 .createdBy(youUser.getId())
                 .link(url)
-                .build());
+                .build();
+        chatroom.setId(id);
+        chatroomRepo.save(chatroom);
         JsonObject response = new JsonObject();
         response.add("old_array", gson.toJsonTree(youUser.getChatrooms()));
         response.add("new", gson.toJsonTree(id.toString()));

@@ -2,30 +2,34 @@ package com.zazabeyligisf.zazacord.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.zazabeyligisf.zazacord.model.Chatroom;
 import com.zazabeyligisf.zazacord.model.Message;
 import com.zazabeyligisf.zazacord.model.User;
+import com.zazabeyligisf.zazacord.repositories.ChatroomRepo;
+import com.zazabeyligisf.zazacord.repositories.MessageRepo;
 import com.zazabeyligisf.zazacord.repositories.UserRepository;
 import com.zazabeyligisf.zazacord.services.ChatService;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.net.MalformedURLException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Controller
+@RestController
 @RequestMapping("api")
 public class ChatController {
     final ChatService chatService;
     final SimpMessagingTemplate simpMessagingTemplate;
     private final UserRepository userRepository;
     private final Gson gson;
+    private final MessageRepo messageRepo;
+    private final ChatroomRepo chatroomRepo;
 
     //TODO ADD CHATROOMS
     //TODO ADD USERS ONLINE
@@ -33,11 +37,13 @@ public class ChatController {
     //TODO ADD ID FEATURE TO ALL TYPES AND ACCEPT JSON INSTEAD OF PAYLOADS
     @Autowired
     public ChatController(ChatService chatService, SimpMessagingTemplate simpMessagingTemplate,
-                          UserRepository userRepository, Gson gson) {
+                          UserRepository userRepository, Gson gson, MessageRepo messageRepo, ChatroomRepo chatroomRepo) {
         this.chatService = chatService;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.userRepository = userRepository;
         this.gson = gson;
+        this.messageRepo = messageRepo;
+        this.chatroomRepo = chatroomRepo;
     }
 
     @PostMapping("/get-user")
@@ -83,17 +89,28 @@ public class ChatController {
         return chatService.createUser(user);
     }
 
-    @MessageMapping("/message")
-    @SendTo("/chatroom/public")
-    public Message receivePublicMessage(@Payload Message message) {
-        return message;
-    }
+    @MessageMapping("/chat")
+    public String receivePrivateMessage(@RequestBody String message) throws InterruptedException {
+        JsonObject messageJson = gson.fromJson(message, JsonObject.class);
+        UUID chatroomID = UUID.fromString(messageJson.get("chatroomID").getAsString());
 
-    @MessageMapping("/private-message")
-    public Message receivePrivateMessage(@RequestBody String message) {
+        Message message1 = Message.builder()
+                .messageID(UUID.randomUUID())
+                .message(messageJson.get("message").getAsString())
+                .dateTime(LocalDateTime.now())
+                .senderName(messageJson.get("senderName").getAsString())
+                .chatroomID(chatroomID)
+                .build();
+        messageRepo.save(message1);
+        Chatroom foundroom= chatroomRepo.findById(chatroomID).orElseThrow();
+        foundroom.getMessageIDs().add(chatroomID);
+        chatroomRepo.save(foundroom);
 
-        Message message1 = chatService.receivePrivateMessage(message);
-        simpMessagingTemplate.convertAndSendToUser(message1.getChatroomID().toString(), "/private", message1.toString());// /user/{userName}/private
-        return message1;
+        System.out.printf("Message: %s%n", message);
+        JsonObject response = new JsonObject();
+        response.addProperty("senderName", message1.getSenderName());
+        response.addProperty("message", message1.getMessage());
+        simpMessagingTemplate.convertAndSend("/topic/chatroom/" + chatroomID, gson.toJson(response));
+        return gson.toJson(response);
     }
 }

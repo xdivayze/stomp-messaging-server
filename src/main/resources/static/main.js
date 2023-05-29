@@ -2,13 +2,13 @@ var stompClient = null;
 let name = null;
 let real_username = null;
 
-//TODO OPTIMIZE ACCORDING TO SERVER
-//TODO ADD MESSAGE HISTORY
-//TODO ADD CHATROOM FEATURE
-//TODO ADD FRIENDS ONLINE
-//TODO SHOW FRIENDS IN A TD TR
-//TODO ADD LOGIN AND REGISTER
-//TODO TRANSFER LOGIN TO ANOTHER PAGE
+//TODO SHOW MESSAGES ON THE SCREEN
+//TODO RETRIEVE MESSAGES FROM UUID
+
+$(document).ready(function () {
+    connect();
+});
+
 
 $("#chatroom-options").hide();
 
@@ -22,6 +22,7 @@ $("#test-12").click(function () {
 });
 
 function register(username, pass) {
+
     return fetch("/api/new-user", {
         method: "POST",
         headers: {
@@ -57,10 +58,19 @@ $("#new-room").click(function () {
             $("#rooms-list").append(customIL)
         });
         $(".list-group-item").click(function () {
-            window.open("/chatroom/" + $(this).text(), "_blank");
+            let message_inp = $("#input-group-message-main");
+            $("#basic-addon1").text($(this).text());
+            console.log($(this).text());
+            message_inp.show();
+
+            stompClient.subscribe('/topic/chatroom/' + $(this).text(), function (message) {
+                console.log("Received message: " + message.body);
+            });
         });
     });
 });
+
+
 
 $("#connect").click(function () {
     register($("#username").val(), $("#pass").val()).then(response => {
@@ -78,30 +88,23 @@ $("#connect").click(function () {
     });
 });
 
+function sendMessage() {
+    stompClient.send("/app/chat", {}, JSON.stringify({
+        'senderName': name,
+        'message': $("#input-group-text-msg").val(),
+        'chatroomID': $("#basic-addon1").text()
+    }));
+}
+
+$("#send-message-btn").click(function () {
+    sendMessage();
+});
+
 function connect() {
-    var socket = new SockJS("/ws");
+    var socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
-        stompClient.subscribe("/user/" + name + "/private", function (response) {
-            let message = JSON.parse(response.body).message;
-            let sender = JSON.parse(response.body).senderName;
-            console.log(message);
-            $("#messages").append(("<tr class='house'><td>" + sender + " : " + message + "</td></tr>"));
-        });
+        console.log('Connected: ' + frame);
+        // Subscribe to the chatroom and handle incoming messages
     });
 }
-
-function sendMSG(text, to) {
-    $("#content").val("");
-    stompClient.send("/app/private-message", {}, JSON.stringify({
-        message: text,
-        receiverName: to,
-        senderName: name
-    }));
-    $("#messages").append(("<tr class='from'><td>" + name + ' : ' + text + "</td></tr>"));
-}
-
-connect();
-$("#submit").click(function () {
-    sendMSG($("#content").val(), $("#to").val());
-});
