@@ -1,5 +1,6 @@
 package com.zazabeyligisf.zazacord.services;
 
+import com.github.javafaker.Faker;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -12,10 +13,10 @@ import com.zazabeyligisf.zazacord.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Service
@@ -50,38 +51,48 @@ public class ChatService {
         return message1;
     }
 
-    public void createChatroom(String payload) {
+    public String createChatroom(String payload) throws MalformedURLException {
         JsonObject jsonObject = gson.fromJson(payload, JsonObject.class);
-        List<UUID> friends = IntStream.range(0, jsonObject.get("userIDs").getAsJsonArray().size())
-                .mapToObj(jsonObject.get("userIDs").getAsJsonArray()::get)
-                .map(JsonElement::getAsString)
-                .map(UUID::fromString)
-                .toList();
-
-        for (UUID friend : friends) {
-            userRepository.findById(friend).orElseThrow();
-        }
-
-        System.out.println("friends = " + friends);
-
+        String you = jsonObject.get("you").getAsString();
+        UUID id = UUID.randomUUID();
+        URL url = new URL("http://xahin.xyz/chatrooms/" + id.toString());
+        User youUser = userRepository.findUserByUsername(you).orElseThrow();
         chatroomRepo.save(Chatroom.builder()
+                .id(id)
                 .messageIDs(new LinkedList<UUID>())
-                .userIDs(friends)
+                .userIDs(new LinkedList<String>())
+                .createdBy(youUser.getId())
+                .link(url)
                 .build());
+        JsonObject response = new JsonObject();
+        response.add("old_array", gson.toJsonTree(youUser.getChatrooms()));
+        response.add("new", gson.toJsonTree(id.toString()));
+        youUser.getChatrooms().add(id);
+        userRepository.update(youUser, gson.fromJson(gson.toJson(youUser), JsonObject.class));
+        return gson.toJson(response);
     }
 
-    public void createUser(String user) {
+    public String createUser(String user) {
         JsonObject payload = gson.fromJson(user, JsonObject.class);
-        if (payload.has("id")) {
-            userRepository.update(userRepository.findById(UUID.fromString(payload.get("id").getAsString())).orElseThrow(), gson.fromJson(user, JsonObject.class));
-
+        Optional<User> foundUser = userRepository.findUserByUsername(payload.get("username").getAsString());
+        if (foundUser.isPresent()) {
+            if (!foundUser.get().getPassword().equals(payload.get("password").getAsString())) {
+                throw new RuntimeException("Wrong password");
+            }
+            return foundUser.get().getFakeUsername();
         } else {
+            Faker fake = new Faker();
+            UUID id = UUID.randomUUID();
+            String fakeSupername = fake.superhero().name();
             userRepository.save(User.builder()
                     .friends(new LinkedList<UUID>())
-                    .id(UUID.randomUUID())
+                    .id(id)
                     .password(payload.get("password").getAsString())
                     .username(payload.get("username").getAsString())
+                    .fakeUsername(fakeSupername)
+                    .chatrooms(new LinkedList<UUID>())
                     .build());
+            return fakeSupername;
         }
     }
 }

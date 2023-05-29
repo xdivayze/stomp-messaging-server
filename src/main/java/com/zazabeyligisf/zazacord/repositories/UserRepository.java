@@ -26,8 +26,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             save(user);
             return Optional.of(user);
         }).orElseThrow();
-
-
         save(new Gson().fromJson(payload, User.class));
 
     }

@@ -12,11 +12,13 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.MalformedURLException;
 import java.util.UUID;
 
-@RestController
+@Controller
 @RequestMapping("api")
 public class ChatController {
     final ChatService chatService;
@@ -64,25 +66,13 @@ public class ChatController {
     }
 
     @PostMapping("/create-chatroom")
-    public void createChatroom(@RequestBody String payload) {
-        chatService.createChatroom(payload);
+    public String createChatroom(@RequestBody String payload) throws MalformedURLException {
+        return chatService.createChatroom(payload);
     }
 
     @PostMapping("new-user")
-    public void newUser(@RequestBody String user) {
-        chatService.createUser(user);
-    }
-
-    @GetMapping("/add-friend")
-    public void addFriend(@Param("id") String id, @Param("friendid") String friendid) {
-        User user = userRepository.findById(UUID.fromString(id)).orElseThrow();
-        UUID friendID = UUID.fromString(friendid);
-        //check if uuid is existing in friends
-        user.getFriends().stream().map(UUID::toString).filter(friendID.toString()::equals).findAny().or(() -> {
-            user.getFriends().add(friendID);
-            return java.util.Optional.empty();
-        });
-        userRepository.update(user, gson.fromJson(gson.toJson(user), JsonObject.class));
+    public String newUser(@RequestBody String user) {
+        return chatService.createUser(user);
     }
 
     @MessageMapping("/message")

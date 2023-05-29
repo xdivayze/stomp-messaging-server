@@ -1,128 +1,73 @@
 var stompClient = null;
-const name = null;
-var userUUID = null;
+let name = null;
+let real_username = null;
 
 //TODO OPTIMIZE ACCORDING TO SERVER
 //TODO ADD MESSAGE HISTORY
 //TODO ADD CHATROOM FEATURE
 //TODO ADD FRIENDS ONLINE
-//TODO ADD FRIENDSHIP
+//TODO SHOW FRIENDS IN A TD TR
 //TODO ADD LOGIN AND REGISTER
 //TODO TRANSFER LOGIN TO ANOTHER PAGE
 
-$("#yeter").hide();
-$("#show-friends").hide();
+$("#chatroom-options").hide();
 
-function validate() {
-    let name = $("#username").val();
-    if (name === "") {
-        alert("Please enter a name");
-        return false;
-    }
-    let password = $("#pass").val();
-    if (password === "") {
-        alert("Please enter a password");
-        return false;
-    }
-    let json = {
-        username: name,
-        password: password,
-    }
-
-    fetch("/api/get-user", {
-        method: 'POST',
+function register(username, pass) {
+    return fetch("/api/new-user", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json"
         },
-        body: JSON.stringify(json),
-    }).then(response => response.text()).then(response => {
-        userUUID = response;
-        console.log(userUUID);
-    }).then(() => {
-        $("#login").hide();
-    }).then(() => {
-        let block = "<div class='input-group-prepend'>\n" +
-            "        <span class='input-group-text' id='arobase'>@</span>\n" +
-            "    </div>\n" +
-            "    <input id='query-username' type='text' class='form-control' placeholder='Username' aria-label='Username' aria-describedby='arobase'>\n" +
-            "    <button type='button' class='btn btn-outline btn-primary' id='query-button'>ADAM ARA </button>"
-        $("#query-input-group").append(block);
-        let show_friends = $("#show-friends");
-        show_friends.show();
-        show_friends.click(function () {
-            getFriends(userUUID).then(response => {
-                console.log(response.friends);
-            });
-        });
-    }).then(() => {
-
+        body: JSON.stringify({
+            username: username,
+            password: pass
+        }),
     });
 }
 
-$("#connect").click(validate);
-
-$("#query").on("click", "#query-button", function () {
-    let url = "/api/get-users?" + new URLSearchParams({
-        username: $("#query-username").val()
+function new_room(real_username) {
+    return fetch("/api/create-chatroom", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            you: real_username,
+        }),
     });
-    console.log(url);
+}
 
-    fetch(url).then(response => response.json()).then(response => {
-        $("#query-table").remove();
-        let count = 0;
-        let static_block = "<table id='query-table' class='table table-dark table-hover'>\n" +
-            "       <thead>\n" +
-            "        <tr>\n" +
-            "            <th scope='col'>#</th>\n" +
-            "            <th scope='col'>KULLANICI ADI</th>\n" +
-            "            <th scope='col'>UUID</th>\n" +
-            "        </tr>\n" +
-            "        </thead>\n" +
-            "        <tbody id='query-table-body'>\n" +
-            "\n" +
-            "        </tbody>\n" +
-            "        </thead>\n" +
-            "    </table>"
-        $("#actually-here").append(static_block);
-        $("#query-input-group").hide();
-        let yeter = $("#yeter");
+$("#new-room").click(function () {
+    $("#rooms-list").empty();
 
-        yeter.click(function () {
-            yeter.hide();
-            $("#query-input-group").show();
-            $("#query-table").remove();
+    new_room(real_username).then(response => response.json()).then(response => {
+        console.log(response);
+        $("#rooms-list").append("<a class='list-group-item list-group-item-action list-group-item-success'>" + response.new + "</a>");
+        response.old_array.forEach(item => {
+            let customIL = "<a class='list-group-item list-group-item-action list-group-item-dark'>" + item + "</a>"
+            $("#rooms-list").append(customIL)
         });
-        yeter.show();
-        response.forEach(user => {
-            $("#query-table-body").append("<tr class='user-query-result-ror' ><th scope='row'>" + count + "</th><td>" + user.username + "</td><td>" + `${user.id}` + "</td></tr>");
-            count++;
-        });
-        $(".user-query-result-ror").click(function () {
-            let userId = $(this).find("td").last().text();
-            addFriend(userUUID, userId).then(() => {
-                console.log("added friend");
-            });
+        $(".list-group-item").click(function () {
+            window.open("/chatroom/" + $(this).text(), "_blank");
         });
     });
 });
 
-async function getFriends(id) {
-    let url = "/api/get-user-by-id?" + new URLSearchParams({
-        id: id
+$("#connect").click(function () {
+    register($("#username").val(), $("#pass").val()).then(response => {
+        if (response.status === 200) {
+            real_username = $("#username").val();
+            $("#login").hide();
+            response.text().then(response => {
+                name = response;
+                console.log(name);
+            });
+            $("#chatroom-options").show();
+        } else {
+            alert("mal");
+        }
     });
-    console.log(url);
-    let response = await fetch(url);
-    return await response.json();
-}
-
-async function addFriend(uuid, uuid1) {
-    let url = "/api/add-friend?" + new URLSearchParams({
-        id: uuid,
-        friendid: uuid1
-    });
-    console.log(url);
-    return await fetch(url);
-}
+});
 
 function connect() {
     var socket = new SockJS("/ws");

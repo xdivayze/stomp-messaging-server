@@ -25,5 +25,8 @@ public class User {
     @ElementCollection
     private List<UUID> friends;
     private String password;
+    private String fakeUsername;
+    @ElementCollection
+    private List<UUID> chatrooms;
 
 }
