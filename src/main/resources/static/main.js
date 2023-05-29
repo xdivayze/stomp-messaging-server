@@ -12,6 +12,15 @@ let real_username = null;
 
 $("#chatroom-options").hide();
 
+$("#test-12").click(function () {
+    fetch("api/chatroom?" + new URLSearchParams({
+            id: "test-12"
+        })
+    ).then(response => response.text()).then(response => {
+        window.open("/api/chatroom", "_blank");
+    })
+});
+
 function register(username, pass) {
     return fetch("/api/new-user", {
         method: "POST",

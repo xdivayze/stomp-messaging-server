@@ -14,6 +14,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.net.MalformedURLException;
 import java.util.UUID;
@@ -51,6 +52,13 @@ public class ChatController {
             return user.getId().toString();
         }
         return "Passwords don't match";
+    }
+
+    @GetMapping("/chatroom")
+    public ModelAndView getChatroomHtml(@Param("id") String id) {
+        ModelAndView modelAndView = new ModelAndView("chatroom");
+        modelAndView.addObject("id", id);
+        return modelAndView;
     }
 
     @GetMapping("/get-users")
