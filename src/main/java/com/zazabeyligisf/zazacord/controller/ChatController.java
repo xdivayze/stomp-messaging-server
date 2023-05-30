@@ -61,10 +61,9 @@ public class ChatController {
     }
 
     @GetMapping("/chatroom")
-    public ModelAndView getChatroomHtml(@Param("id") String id) {
-        ModelAndView modelAndView = new ModelAndView("chatroom");
-        modelAndView.addObject("id", id);
-        return modelAndView;
+    public Boolean getChatroomHtml(@Param("id") String id) {
+        id = id.trim();
+        return chatroomRepo.findById(UUID.fromString(id)).isPresent();
     }
 
     @GetMapping("/get-users")
@@ -93,9 +92,10 @@ public class ChatController {
     public String receivePrivateMessage(@RequestBody String message) throws InterruptedException {
         JsonObject messageJson = gson.fromJson(message, JsonObject.class);
         UUID chatroomID = UUID.fromString(messageJson.get("chatroomID").getAsString());
+        UUID messageID = UUID.randomUUID();
 
         Message message1 = Message.builder()
-                .messageID(UUID.randomUUID())
+                .messageID(messageID)
                 .message(messageJson.get("message").getAsString())
                 .dateTime(LocalDateTime.now())
                 .senderName(messageJson.get("senderName").getAsString())
@@ -103,7 +103,7 @@ public class ChatController {
                 .build();
         messageRepo.save(message1);
         Chatroom foundroom= chatroomRepo.findById(chatroomID).orElseThrow();
-        foundroom.getMessageIDs().add(chatroomID);
+        foundroom.getMessageIDs().add(messageID);
         chatroomRepo.save(foundroom);
 
         System.out.printf("Message: %s%n", message);
