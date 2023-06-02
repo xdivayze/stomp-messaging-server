@@ -63,7 +63,7 @@ $("#new-room").click(function () {
 
 function showChatRoom(id2) {
     let id = id2.toString().trimEnd();
-    id=id.trimStart();
+    id = id.trimStart();
 
     let message_inp = $("#input-group-message-main");
     $("#basic-addon1").text(id);
@@ -81,7 +81,7 @@ function showChatRoom(id2) {
         }
         console.log(chatroom);
         console.log(chatroom.userColorPairs.get(username));
-        $("#message-table").append(`<tr><td style="background-color: #${chatroom.userColorPairs.get(username)}" >${username} : ${payload.message}</td></tr>`);
+        $("#message-table").prepend(`<tr><td style="background-color: #${chatroom.userColorPairs.get(username)}" >${username} : ${payload.message}</td></tr>`);
     });
 }
 
@@ -102,7 +102,7 @@ $("#send-uuid-chat-btn").click(function () {
 });
 
 function enterChatroom(id) {
-    id=id.toString().trim();
+    id = id.toString().trim();
     fetch("/api/chatroom?" + new URLSearchParams({
         id: id
     })
@@ -142,6 +142,7 @@ function sendMessage() {
         'message': $("#input-group-text-msg").val(),
         'chatroomID': $("#basic-addon1").text()
     }));
+    $("#input-group-text-msg").val("");
 }
 
 $("#send-message-btn").click(function () {
