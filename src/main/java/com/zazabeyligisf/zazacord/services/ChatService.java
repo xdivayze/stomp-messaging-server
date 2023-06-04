@@ -1,23 +1,22 @@
 package com.zazabeyligisf.zazacord.services;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.github.javafaker.Faker;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.zazabeyligisf.zazacord.model.Chatroom;
-import com.zazabeyligisf.zazacord.model.Message;
 import com.zazabeyligisf.zazacord.model.User;
 import com.zazabeyligisf.zazacord.repositories.ChatroomRepo;
 import com.zazabeyligisf.zazacord.repositories.MessageRepo;
 import com.zazabeyligisf.zazacord.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.IntStream;
 
 @Service
 public class ChatService {
