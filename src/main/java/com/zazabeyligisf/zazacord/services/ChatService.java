@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.javafaker.Faker;
@@ -25,7 +24,6 @@ public class ChatService {
     final MessageRepo messageRepo;
     final UserRepository userRepository;
 
-    @Autowired
     public ChatService(Gson gson, ChatroomRepo chatroomRepo, MessageRepo messageRepo, UserRepository userRepository) {
         this.gson = gson;
         this.chatroomRepo = chatroomRepo;
