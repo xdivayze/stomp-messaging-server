@@ -4,7 +4,6 @@ import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -38,7 +37,6 @@ public class ChatController {
     //TODO ADD USERS ONLINE
     //TODO ADD FRIENDS
     //TODO ADD ID FEATURE TO ALL TYPES AND ACCEPT JSON INSTEAD OF PAYLOADS
-    @Autowired
     public ChatController(ChatService chatService, SimpMessagingTemplate simpMessagingTemplate,
                           UserRepository userRepository, Gson gson, MessageRepo messageRepo, ChatroomRepo chatroomRepo) {
         this.chatService = chatService;
