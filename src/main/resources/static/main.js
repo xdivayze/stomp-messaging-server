@@ -2,19 +2,22 @@ var stompClient = null;
 let name = null;
 let real_username = null;
 
+
+
 //TODO RETRIEVE MESSAGES FROM UUID
 
 $(document).ready(function () {
   connect();
 });
+let subscription = null;
 
 let message_count = 0;
 let seconds = 0;
 let mpm = 0;
 let now = new Date().getTime();
+let started = false;
 
-$("#chatroom-options").hide();
-$("#temp-opt").hide();
+
 
 $("#test-12").click(function () {
   fetch(
@@ -43,6 +46,7 @@ function register(username, pass) {
 }
 
 function new_room(real_username) {
+  console.log("new room");
   return fetch("/api/create-chatroom", {
     method: "POST",
     headers: {
@@ -54,32 +58,17 @@ function new_room(real_username) {
   });
 }
 
-$("#new-room").click(function () {
-  $("#rooms-list").empty();
-
-  new_room(real_username)
-    .then((response) => response.json())
-    .then((response) => {
-      console.log(response);
-      $("#rooms-list").append(
-        "<a class='list-group-item list-group-item-action list-group-item-success'>" +
-          response.new +
-          "</a>"
-      );
-      response.old_array.forEach((item) => {
-        let customIL =
-          "<a class='list-group-item list-group-item-action list-group-item-dark'>" +
-          item +
-          "</a>";
-        $("#rooms-list").append(customIL);
-      });
-      $(".list-group-item").click(function () {
-        showChatRoom($(this).text());
-      });
-    });
-});
-
 function showChatRoom(id2) {
+  $("#table-prim-prep").empty();
+  $("#table-prim-prep").append(table_primary);
+  $("#input-group-text-msg").on("keypress", function (e) {
+    if (e.which === 13) {
+      sendMessage();
+    }
+  });
+  
+  
+
   let id = id2.toString().trimEnd();
   id = id.trimStart();
 
@@ -89,8 +78,10 @@ function showChatRoom(id2) {
   message_inp.show();
   let chatroom = new ChatRoom(id);
   $("#temp-opt").hide();
+  
+  subscription ? subscription.unsubscribe() : null;
 
-  stompClient.subscribe("/topic/chatroom/" + id, function (message) {
+  subscription = stompClient.subscribe("/topic/chatroom/" + id, function (message) {
     let payload = JSON.parse(message.body);
     let randomColor = Math.floor(Math.random() * 16777215).toString(16);
     let username = payload.senderName;
@@ -113,15 +104,7 @@ function ChatRoom(id) {
   this.id = id;
 }
 
-$("#input-group-text-msg").on("keypress", function (e) {
-  if (e.which === 13) {
-    sendMessage();
-  }
-});
 
-$("#send-uuid-chat-btn").click(function () {
-  enterChatroom($("#chat-uuid-input").val());
-});
 
 function enterChatroom(id) {
   id = id.toString().trim();
@@ -150,17 +133,25 @@ $("#connect").click(function () {
         name = response;
         console.log(name);
       });
-      $("#temp-opt").show();
-      $("#chatroom-options").show();
+      $("#chatroom-options").append(chatroom_opt);
+      $("#send-uuid-chat-btn").click(function () {
+        enterChatroom($("#chat-uuid-input").val());
+      });
+      
+      $("#send-message-btn").click(function () {
+        sendMessage();
+      });
+      $("#toggle-btn-chat").click(() => {
+        $("#temp-opt").toggle();
+      });
+      define_new_room();
     } else {
       alert("mal");
     }
   });
 });
 
-$("#toggle-btn-chat").click(() => {
-  $("#temp-opt").toggle();
-});
+
 
 function sendMessage() {
   let time_elapsed = new Date().getTime() - now;
@@ -197,10 +188,6 @@ function sendMessage() {
   console.log(mpm);
 }
 
-$("#send-message-btn").click(function () {
-  sendMessage();
-});
-
 function connect() {
   var socket = new SockJS("/ws");
   stompClient = Stomp.over(socket);
@@ -209,3 +196,59 @@ function connect() {
     // Subscribe to the chatroom and handle incoming messages
   });
 }
+
+function define_new_room() {
+  $("#new-room").click(function () {
+      $("#rooms-list").empty();
+
+      new_room(real_username)
+        .then((response) => response.json())
+        .then((response) => {
+          console.log(response);
+          $("#rooms-list").append(
+            "<a class='list-group-item list-group-item-action list-group-item-success'>" +
+              response.new +
+              "</a>"
+          );
+          response.old_array.forEach((item) => {
+            let customIL =
+              "<a class='list-group-item list-group-item-action list-group-item-dark'>" +
+              item +
+              "</a>";
+            $("#rooms-list").append(customIL);
+          });
+          $(".list-group-item").click(function () {
+            showChatRoom($(this).text());
+          });
+        });
+    });
+}
+
+let table_primary = `
+<div id="table-primary" class="border border-primary">
+<div id="input-group-message-main" style="display: none;" class="input-group mb-3">
+    <div class="input-group-prepend">
+        <span class="input-group-text" id="basic-addon1"></span>
+    </div>
+    <input id="input-group-text-msg" type="text" class="form-control" placeholder="mesaj" aria-label="Username" aria-describedby="basic-addon1">
+    <button id="send-message-btn" class="btn btn-primary">enter de var :)</button>
+</div>
+<table class="table " id="message-table"></table>
+</div>`;
+
+let chatroom_opt = `
+  <div id="temp-opt">
+      <button class="btn btn-danger" style="width:100%;" id="new-room" >YENİ ODA TALEP ET</button>
+
+      <ul id="rooms-list" class="list-group">
+
+      </ul>
+      <div id="room-id-enter" class="input-group mb-3">
+          <div class="input-group-prepend">
+              <span class="input-group-text" id="room-id-addon">ODA ID</span>
+          </div>
+          <input id="chat-uuid-input" type="text" class="form-control" placeholder="xxxx-xxxx-xxxx-xxxx" aria-label="Username" aria-describedby="room-id-addon">
+          <button id="send-uuid-chat-btn" class="btn btn-primary">enter de var :)</button>
+      </div>
+  </div>
+  <button style="width: 100%;" id="toggle-btn-chat" class="mt-2 btn btn-danger">GÖSTER(ME)</button>`;

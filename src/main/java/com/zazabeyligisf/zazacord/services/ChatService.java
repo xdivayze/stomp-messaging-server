@@ -17,6 +17,10 @@ import com.zazabeyligisf.zazacord.repositories.ChatroomRepo;
 import com.zazabeyligisf.zazacord.repositories.MessageRepo;
 import com.zazabeyligisf.zazacord.repositories.UserRepository;
 
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class ChatService {
     final Gson gson;
@@ -30,7 +34,7 @@ public class ChatService {
         this.messageRepo = messageRepo;
         this.userRepository = userRepository;
     }
-
+    
     public String createChatroom(String payload) throws MalformedURLException {
         JsonObject jsonObject = gson.fromJson(payload, JsonObject.class);
         String you = jsonObject.get("you").getAsString();
@@ -50,6 +54,7 @@ public class ChatService {
         response.add("new", gson.toJsonTree(id.toString()));
         youUser.getChatrooms().add(id);
         userRepository.update(youUser, gson.fromJson(gson.toJson(youUser), JsonObject.class));
+        log.info(response.toString());
         return gson.toJson(response);
     }
 
