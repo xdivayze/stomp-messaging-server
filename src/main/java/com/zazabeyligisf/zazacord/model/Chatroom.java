@@ -45,4 +45,5 @@ public class Chatroom {
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<UUID> messageIDs;
+    
 }
