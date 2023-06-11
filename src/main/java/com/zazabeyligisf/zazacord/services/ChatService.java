@@ -17,7 +17,6 @@ import com.zazabeyligisf.zazacord.repositories.ChatroomRepo;
 import com.zazabeyligisf.zazacord.repositories.MessageRepo;
 import com.zazabeyligisf.zazacord.repositories.UserRepository;
 
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

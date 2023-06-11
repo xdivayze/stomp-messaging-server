@@ -33,10 +33,6 @@ public class ChatController {
     private final MessageRepo messageRepo;
     private final ChatroomRepo chatroomRepo;
 
-    //TODO ADD CHATROOMS
-    //TODO ADD USERS ONLINE
-    //TODO ADD FRIENDS
-    //TODO ADD ID FEATURE TO ALL TYPES AND ACCEPT JSON INSTEAD OF PAYLOADS
     public ChatController(ChatService chatService, SimpMessagingTemplate simpMessagingTemplate,
                           UserRepository userRepository, Gson gson, MessageRepo messageRepo, ChatroomRepo chatroomRepo) {
         this.chatService = chatService;
